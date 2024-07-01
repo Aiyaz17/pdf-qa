@@ -14,7 +14,7 @@ const Navbar = ({ pdf, setPdf }) => {
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
         if (file) {
-            // if if its a pdf file
+            // Checking if the file is a PDF file or not
             if (file.type !== 'application/pdf') {
                 toast.error('Please upload a PDF file', {
                     position: "top-center",
@@ -77,26 +77,30 @@ const Navbar = ({ pdf, setPdf }) => {
                         wrapperStyle={{}}
                         wrapperClass=""
                     /> :
-                    <div className='flex gap-x-5 md:gap-x-10'>
-                        {pdf && <div className='flex gap-x-3 items-center'>
-
-                            <img src={pdfIcon} alt="pdf icon" />
-                            {/* restrict to show only 15 char of name */}
-                            <p className='block sm:hidden text-sm font-medium text-[rgba(15,169,88,1)]'>{pdf.filename.length > 15 ? pdf.filename.slice(0, 15) + '...' : pdf.filename}</p>
-                            <p className='hidden sm:block text-sm font-medium text-[rgba(15,169,88,1)]'>{pdf.filename}</p>
-                        </div>}
-                        <button
-                            className='flex gap-x-3 items-center py-2 px-2 md:px-6 rounded-xl border-2 border-black text-md'
-                            onClick={handleUploadClick}
-                        >
-                            <IoIosAddCircleOutline size={22} />
-                            <p className='hidden md:block font-bold'>Upload PDF</p>
-                        </button>
-                    </div>
+                    <PdfUploadButn handleUploadClick={handleUploadClick} pdf={pdf} />
                 }
             </div>
         </div >
     );
 };
+
+const PdfUploadButn = ({ handleUploadClick, pdf }) => {
+    return <div className='flex gap-x-5 md:gap-x-10'>
+        {pdf && <div className='flex gap-x-3 items-center'>
+
+            <img src={pdfIcon} alt="pdf icon" />
+            {/* restrict to show only 15 char of name */}
+            <p className='block sm:hidden text-sm font-medium text-[rgba(15,169,88,1)]'>{pdf.filename.length > 15 ? pdf.filename.slice(0, 15) + '...' : pdf.filename}</p>
+            <p className='hidden sm:block text-sm font-medium text-[rgba(15,169,88,1)]'>{pdf.filename}</p>
+        </div>}
+        <button
+            className='flex gap-x-3 items-center py-2 px-2 md:px-6 rounded-xl border-2 border-black text-md'
+            onClick={handleUploadClick}
+        >
+            <IoIosAddCircleOutline size={22} />
+            <p className='hidden md:block font-bold'>Upload PDF</p>
+        </button>
+    </div>
+}
 
 export default Navbar;

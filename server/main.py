@@ -2,29 +2,32 @@ from fastapi import FastAPI,HTTPException,Depends,UploadFile,File
 from typing import Annotated
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from database import SessionLocal,engine
-import models
 from fastapi.middleware.cors import CORSMiddleware
-from util import extractTextFromPDF,chunkAndEmbed,preprocess_text,loadEmbeddings
 from dotenv import load_dotenv
-from langchain_community.llms import HuggingFaceHub,Cohere
+from util import extractTextFromPDF,chunkAndEmbed,preprocess_text,loadEmbeddings
+from langchain_community.llms import Cohere
 from langchain.chains import RetrievalQA
 import uuid
+
+from database import SessionLocal,engine
+import models
 
 load_dotenv()
 
 # Create a FastAPI instance
 app = FastAPI()
 
-# Create a middleware to allow CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=['*'],
-    allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*'],
-)
+# CORS configuration
+def configure_cors(app: FastAPI):
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=['*'],
+        allow_credentials=True,
+        allow_methods=['*'],
+        allow_headers=['*'],
+    )
 
+configure_cors(app)
 
 # Create a class to represent the data model for new conversation
 class NewConversationModel(BaseModel):
@@ -35,8 +38,6 @@ class NewConversationModel(BaseModel):
 class FollowUpConversationModel(BaseModel):
     session_id: str
     query: str
-
-
 
 # Dependency
 def get_db():
@@ -50,7 +51,6 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 models.Base.metadata.create_all(bind=engine)
 
-# Create a route to create a new PDF document
 @app.post('/pdf-upload/')
 def upload_pdf(db: db_dependency,pdf_document: UploadFile = File(...)):
     file_location = f'./pdfs/{pdf_document.filename}'
@@ -75,11 +75,8 @@ def upload_pdf(db: db_dependency,pdf_document: UploadFile = File(...)):
     db.commit()
     db.refresh(db_extracted_text)
 
-    # index = create_index(text,db_pdf_document.id)
+    # Create embeddings and store vectorstore
     chunkAndEmbed(preprocessed_paragraphs,db_pdf_document.id)
-
-    print("PDF Document ID: ", db_pdf_document.id)
-
     return db_pdf_document
 
 
@@ -103,7 +100,6 @@ def start_conversation(new_conversation: NewConversationModel, db: db_dependency
 
     return {"session_id": session_id, "response": res["result"]}
 
-# Create a route to handle follow-up questions
 @app.post('/follow_up/')
 def follow_up(follow_up: FollowUpConversationModel, db: db_dependency):
     # Retrieve the conversation history
@@ -127,9 +123,3 @@ def follow_up(follow_up: FollowUpConversationModel, db: db_dependency):
     db.commit()
 
     return {"response": res["result"]}
-
-# # Create a route to get all conversations
-# @app.get('/conversations/')
-# def read_conversations( db: db_dependency):
-#     conversations = db.query(models.Conversation).all()
-#     return conversations

@@ -29,5 +29,5 @@ client/.pnp.js
 /server/node_modules
 /server/__pycache__
 /server/*.db
-/server/embeddings/
-/server/pdfs/
+/server/embeddings/*
+/server/pdfs/*

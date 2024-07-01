@@ -2,12 +2,20 @@ import pymupdf
 import re
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-import os
 import pickle
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
 
 def extractTextFromPDF(pdf_path):
+    """
+    Extract text content from a PDF file.
+
+    Args:
+    - pdf_path (str): Path to the PDF file.
+
+    Returns:
+    - str: Extracted text content.
+    """
     openned_pdf = pymupdf.open(pdf_path)
     number_of_pages = len(openned_pdf)
     text=""
@@ -19,6 +27,16 @@ def extractTextFromPDF(pdf_path):
 
 
 def preprocess_text(text):
+    """
+    Preprocesses text by lowercasing, removing unnecessary whitespace and newlines,
+    normalizing whitespace, and splitting into paragraphs.
+
+    Args:
+    - text (str): Input text to preprocess.
+
+    Returns:
+    - list of str: List of preprocessed paragraphs.
+    """
     # Lower case the text
     text=text.lower()
     
@@ -33,12 +51,20 @@ def preprocess_text(text):
 
     # Remove empty paragraphs and strip extra whitespace
     paragraphs = [p.strip() for p in paragraphs if p.strip()]
-
     return paragraphs
 
 
 def chunkAndEmbed(paragraphs,store_name):
+    """
+    Chunk input paragraphs, embed them using HuggingFaceEmbeddings, and store the embeddings.
 
+    Args:
+    - paragraphs (list of str): List of text paragraphs to process.
+    - store_name (str): Name for storing the embeddings.
+
+    Returns:
+    - FAISS: VectorStore object containing embeddings.
+    """
     text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
             chunk_overlap=200,
@@ -46,7 +72,7 @@ def chunkAndEmbed(paragraphs,store_name):
             )
     chunks = text_splitter.split_text(text=" ".join(paragraphs))
 
-    # Define the path to the pre-trained model you want to use
+    # path to the pre-trained model
     modelPath = "sentence-transformers/all-MiniLM-l6-v2"
 
     # Create a dictionary with model configuration options, specifying to use the CPU for computations
@@ -57,20 +83,29 @@ def chunkAndEmbed(paragraphs,store_name):
 
     # Initialize an instance of HuggingFaceEmbeddings with the specified parameters
     embeddings = HuggingFaceEmbeddings(
-        model_name=modelPath,     # Provide the pre-trained model's path
-        model_kwargs=model_kwargs, # Pass the model configuration options
-        encode_kwargs=encode_kwargs # Pass the encoding options
+        model_name=modelPath,    
+        model_kwargs=model_kwargs, 
+        encode_kwargs=encode_kwargs 
     )
 
     VectorStore = FAISS.from_texts(chunks, embedding=embeddings)
     with open(f"./embeddings/{store_name}.pkl", "wb") as f:
         pickle.dump(VectorStore, f)
 
-
     return VectorStore
 
 
 def loadEmbeddings(store_name):
+    """
+    Load embeddings from a stored file.
+
+    Args:
+    - store_name (str): Name of the stored embeddings file.
+
+    Returns:
+    - FAISS: VectorStore object containing embeddings.
+    """
+    
     with open(f"./embeddings/{store_name}.pkl", "rb") as f:
         VectorStore = pickle.load(f)
     return VectorStore

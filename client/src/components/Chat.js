@@ -36,6 +36,7 @@ const Chat = ({ pdf }) => {
             });
             return;
         }
+
         const newMessages = [...messages, { content: input, sender: 'user' }, {
             content:
                 <Comment
@@ -50,9 +51,8 @@ const Chat = ({ pdf }) => {
                 />
             , sender: 'bot'
         }];
+
         setMessages(newMessages);
-
-
         setInput('');
         chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
 
@@ -60,7 +60,7 @@ const Chat = ({ pdf }) => {
             var path = sessionId == null ? '/start_conversation/' : '/follow_up/';
             var body = sessionId == null ? { "query": input, "pdf_document_id": pdf.id } : { "session_id": sessionId, "query": input };
             const response = await axios.post(path, body);
-            console.log(response);
+
             if (response.status === 200) {
                 newMessages.pop();
                 setMessages([...newMessages, { content: response.data.response, sender: 'bot' }]);
@@ -69,6 +69,7 @@ const Chat = ({ pdf }) => {
             } else {
                 throw new Error('Error sending message');
             }
+
         } catch (error) {
             console.log(error);
             toast.error('Error sending message, Please Try again in some time', {
