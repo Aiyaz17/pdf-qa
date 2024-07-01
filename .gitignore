@@ -31,3 +31,5 @@ client/.pnp.js
 /server/*.db
 /server/embeddings/*
 /server/pdfs/*
+!server/pdfs/.gitkeep
+!server/embeddings/.gitkeep
