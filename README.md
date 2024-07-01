@@ -138,6 +138,7 @@ The application follows a client-server architecture:
   - **Database:** SQLAlchemy with SQLite (can be modified for other databases like PostgreSQL).
   - **Middleware:** CORS middleware for handling cross-origin resource sharing.
   - **Modules:** Utilizes PDF extraction, text preprocessing, embedding generation, and question-answering capabilities using LangChain and Hugging Face models.
+  - **LLM:** Utilizing Cohere llm to generate structed answer from the feeded vectorstore.
 
 - **Frontend (React):**
   - **UI Library:** React.js for building interactive user interfaces.
