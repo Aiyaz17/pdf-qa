@@ -30,3 +30,4 @@ client/.pnp.js
 /server/__pycache__
 /server/*.db
 /server/embeddings/
+/server/pdfs/
